@@ -1,0 +1,5 @@
+pkgList <- c("RcppArmadillo","RcppMLPACK","Rcpp")
+lapply(pkgList, require, character.only=T)
+Sys.setenv("PKG_CXXFLAGS"="-std=c++14")
+Sys.setenv("PKG_CXXFLAGS"="-Wno-ignored-attributes")
+sourceCpp("./test/extension.cpp")
