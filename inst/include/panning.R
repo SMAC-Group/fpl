@@ -1,8 +1,12 @@
+#---------------------
+## Control
+#---------------------
 control <- list(pmax = 15,
                 m = 5e4,
                 alpha = 0.05,
                 seed = 98573459L,
-                ncores = 16L
+                ncores = 16L,
+                verbose = TRUE
                 )
 
 #---------------------
@@ -48,6 +52,7 @@ cv_alpha <- rep(NA_real_,control$pmax)
 #---------------------
 ## SWAG
 #---------------------
+p <- ncol(X)
 for(d in seq_len(control$pmax)){
   # Build all combinations
   if(d == 1){
@@ -71,16 +76,8 @@ for(d in seq_len(control$pmax)){
   VarMat[[d]] <- var_mat
   cv_alpha[d] <- quantile(cv_errors,control$alpha,na.rm=T)
   IDs[[d]] <- which(cv_errors <= cv_alpha[d])
-  med_cv_errors[d] = median(cv_errors, na.rm = T)
-  
   if(d == 1) id_screening <- IDs[[d]]
-  
   if(control$verbose) print(paste0("Dimension explored: ",d," - CV errors at alpha: ",round(cv_alpha[d],4)))
-  if(ncol(var_mat)==1) break
-  
-  if(d > 3 && control$median_stop){
-    if(med_cv_errors[d] >= med_cv_errors[d-1L]) break
-  }
 }
 
 

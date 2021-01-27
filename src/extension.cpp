@@ -283,7 +283,10 @@ Eigen::VectorXd fpl(
   for(unsigned int i=0; i<k; ++i){
     unsigned int se = seed + i;
     Eigen::MatrixXd x(n,p);
-    for(unsigned int j=0;j<p;++j){x.col(j) = X.col(var_mat(j,i));}
+    for(unsigned int j(0);j<p;++j){
+      unsigned int ind = var_mat(j,i);
+      x.col(j) = X.col(ind);
+      }
     cv_errors(i) = cross_validation_logistic_l2(x,y,se,K,M);
   }
   
