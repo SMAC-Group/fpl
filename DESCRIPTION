@@ -1,6 +1,6 @@
 Package: fpl
 Type: Package
-Title: C++ extension of panning
+Title: C++ Extension of Panning
 Version: 0.1.0
 Authors@R: person("Samuel", "Orso", email = "Samuel.Orso@unige.ch", role = c("aut","cre"))
 Description: Cross-validation for logistic regression in C++.

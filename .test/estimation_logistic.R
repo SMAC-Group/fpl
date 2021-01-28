@@ -6,8 +6,8 @@
 
 
 n <- 1e2
-p <- 5
-beta <- seq_len(p)
+p <- 1e3
+beta <- rnorm(p)
 X <- matrix(rnorm(n*p,sd=4/sqrt(n)),nc=p)
 set.seed(123)
 u <- runif(n)
