@@ -10,6 +10,17 @@ logistic_mle <- function(X, y) {
     .Call('_fpl_logistic_mle', PACKAGE = 'fpl', X, y)
 }
 
+#'Test error for logistic regression with counting error
+#'
+#'@param X_train a n x p matrix of training regressor
+#'@param y_train a n-vector of training response
+#'@param X_test a m x p matrix of test regressor
+#'@param y_test a m-vector of test response
+#'@export
+test_logistic_count <- function(X_train, y_train, X_test, y_test) {
+    .Call('_fpl_test_logistic_count', PACKAGE = 'fpl', X_train, y_train, X_test, y_test)
+}
+
 #'Cross-validation for logistic regression with l2-norm error
 #'
 #'@param X a n x p matrix of regressor
