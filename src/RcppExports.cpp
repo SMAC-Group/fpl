@@ -37,6 +37,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_logistic_auc
+double test_logistic_auc(Eigen::MatrixXd& X_train, Eigen::VectorXd& y_train, Eigen::MatrixXd& X_test, Eigen::VectorXd& y_test);
+RcppExport SEXP _fpl_test_logistic_auc(SEXP X_trainSEXP, SEXP y_trainSEXP, SEXP X_testSEXP, SEXP y_testSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X_train(X_trainSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type y_train(y_trainSEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X_test(X_testSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type y_test(y_testSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_logistic_auc(X_train, y_train, X_test, y_test));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cross_validation_logistic_l2
 double cross_validation_logistic_l2(Eigen::MatrixXd& X, Eigen::VectorXd& y, unsigned int seed, unsigned int K, unsigned int M);
 RcppExport SEXP _fpl_cross_validation_logistic_l2(SEXP XSEXP, SEXP ySEXP, SEXP seedSEXP, SEXP KSEXP, SEXP MSEXP) {
@@ -103,6 +117,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_fpl_logistic_mle", (DL_FUNC) &_fpl_logistic_mle, 2},
     {"_fpl_test_logistic_count", (DL_FUNC) &_fpl_test_logistic_count, 4},
+    {"_fpl_test_logistic_auc", (DL_FUNC) &_fpl_test_logistic_auc, 4},
     {"_fpl_cross_validation_logistic_l2", (DL_FUNC) &_fpl_cross_validation_logistic_l2, 5},
     {"_fpl_cross_validation_logistic_count", (DL_FUNC) &_fpl_cross_validation_logistic_count, 5},
     {"_fpl_cross_validation_logistic_auc", (DL_FUNC) &_fpl_cross_validation_logistic_auc, 5},

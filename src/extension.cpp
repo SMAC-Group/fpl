@@ -166,6 +166,37 @@ double test_logistic_count(
   return err;
 }
 
+//'Test error for logistic regression with AUC performance
+//'
+//'@param X_train a n x p matrix of training regressor
+//'@param y_train a n-vector of training response
+//'@param X_test a m x p matrix of test regressor
+//'@param y_test a m-vector of test response
+//'@export
+// [[Rcpp::export]]
+double test_logistic_auc(
+    Eigen::MatrixXd& X_train,
+    Eigen::VectorXd& y_train,
+    Eigen::MatrixXd& X_test,
+    Eigen::VectorXd& y_test
+){
+  double err;
+  unsigned int p = X_train.cols();
+  unsigned int n_test = y_test.size();
+  Eigen::VectorXd pred(n_test);
+  
+  // Regress
+  Eigen::VectorXd beta(p);
+  beta = logistic_mle(X_train,y_train);
+  
+  // Get the predictions
+  pred = (X_test * beta).unaryExpr(Sigmoid());
+  
+  // Classification error
+  err = auc(y_test, pred);
+  return err;
+}
+
 // --------------
 // Cross-validation for logistic regression
 // --------------
