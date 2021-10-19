@@ -28,6 +28,50 @@ struct Indicator {
   const double operator()(const double &t) const {return (t <= 0.5) ? 0.0 : 1.0;}
 };
 
+// https://stackoverflow.com/questions/25921706/creating-a-vector-of-indices-of-a-sorted-vector
+Eigen::VectorXi sort_order(Eigen::VectorXd& x){
+  std::vector<int> ind(x.size());
+  std::size_t n(0);
+  std::generate(std::begin(ind), std::end(ind), [&]{ return n++; });
+  std::sort(std::begin(ind), std::end(ind), [&](int i1, int i2) { return x[i1] > x[i2]; } );
+  int *ptr_data = &ind[0];
+  return Eigen::Map<Eigen::VectorXi>(ptr_data, ind.size());
+}
+
+// adapted from R pROC::auc
+// response is supposed to be 0-1 vector
+double auc(
+    Eigen::VectorXd& response,
+    Eigen::VectorXd& predictor
+){
+  unsigned int n = response.size();
+  double ncases = response.sum();
+  double ncontrols = n - ncases;
+  
+  // order predictor and response
+  Eigen::VectorXi predictor_order = sort_order(predictor);
+  // Eigen::VectorXd predictor_sorted = predictor(predictor_order);
+  Eigen::VectorXd response_sorted = predictor_order.unaryExpr(response);
+  
+  // compute specificity and sensibility
+  Eigen::VectorXd sp(n+1),se(n+1);
+  sp(n) = 1.0;
+  se(n) = 0.0;
+  
+  double j(0.0),k(0.0);
+  for(unsigned int i=0; i<n; ++i){
+    response_sorted(i)==1.0 ? j++ : k++;
+    sp(n-i-1) = 1.0 - k / ncontrols;
+    se(n-i-1) = j / ncases;
+  }
+  
+  // compute AUC
+  Eigen::ArrayXd diffs_x = sp.tail(n) - sp.head(n);
+  Eigen::ArrayXd means_vert = 0.5 * se.tail(n) + 0.5 * se.head(n);
+  
+  return (diffs_x * means_vert).sum();
+}
+
 // --------------
 // Logistic regression
 // --------------
@@ -282,6 +326,84 @@ double cross_validation_logistic_count(
 
   return err / K / M;
 }
+
+//'Cross-validation for logistic regression with AUC
+//'
+//'@param X a n x p matrix of regressor
+//'@param y a n-vector of response
+//'@param seed an integer for setting the seed (reproducibility)
+//'@param K number of splits; 10 by default
+//'@param M number of repetitions; 10 by default
+//'@export
+// [[Rcpp::export]]
+double cross_validation_logistic_auc(
+    Eigen::MatrixXd& X,
+    Eigen::VectorXd& y,
+    unsigned int seed,
+    unsigned int K = 10,
+    unsigned int M = 10
+){
+  // Storage
+  double err(0.0);
+  unsigned int n = X.rows();
+  unsigned int p = X.cols();
+  unsigned int nn = n;
+  unsigned int n_train, n_test;
+  std::vector<int> ivec(n);
+  std::iota(ivec.begin(),ivec.end(),0);
+  std::vector<int> n_fold(K);
+  
+  std::mt19937_64 engine(seed);  // Mersenne twister random number engine
+  
+  for(unsigned int i = 0; i<K; i++){
+    n_fold[i] = std::ceil(nn/(K-i));
+    nn -= n_fold[i];
+  }
+  
+  for(unsigned int m = 0; m < M; m++){
+    // Shuffle the index
+    std::shuffle(ivec.begin(),ivec.end(),engine);
+    
+    // K-fold CV on logitstic classification
+    for(unsigned int k = 0; k < K; k++){
+      // Seperate training/test sets
+      n_train = n-n_fold[k];
+      n_test = n_fold[k];
+      Eigen::MatrixXd X_train(n_train,p),X_test(n_test,p);
+      Eigen::VectorXd y_train(n_train);
+      Eigen::VectorXd y_test(n_test),pred(n_test);
+      
+      unsigned int ii(0),jj(0),ind;
+      
+      for(unsigned int i = k+1; i < n+k+1; i++){
+        if(i%K == 0){
+          ind = ivec[i-k-1];
+          X_test.row(ii) = X.row(ind);
+          y_test(ii) = y(ind);
+          ii++;
+        }else{
+          ind = ivec[i-k-1];
+          X_train.row(jj) = X.row(ind);
+          y_train(jj) = y(ind);
+          jj++;
+        }
+      }
+      
+      // Regress
+      Eigen::VectorXd beta(p);
+      beta = logistic_mle(X_train,y_train);
+      
+      // Get the predictions
+      pred = (X_test * beta).unaryExpr(Sigmoid());
+      
+      // Classification error
+      err += auc(y_test, pred);
+    }
+  }
+  
+  return err / K / M;
+}
+
 
 // --------------
 // Model exploration: fast panning for logistic

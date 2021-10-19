@@ -45,6 +45,18 @@ cross_validation_logistic_count <- function(X, y, seed, K = 10L, M = 10L) {
     .Call('_fpl_cross_validation_logistic_count', PACKAGE = 'fpl', X, y, seed, K, M)
 }
 
+#'Cross-validation for logistic regression with AUC
+#'
+#'@param X a n x p matrix of regressor
+#'@param y a n-vector of response
+#'@param seed an integer for setting the seed (reproducibility)
+#'@param K number of splits; 10 by default
+#'@param M number of repetitions; 10 by default
+#'@export
+cross_validation_logistic_auc <- function(X, y, seed, K = 10L, M = 10L) {
+    .Call('_fpl_cross_validation_logistic_auc', PACKAGE = 'fpl', X, y, seed, K, M)
+}
+
 #'Fast Panning for logistic
 #'
 #'@param X a n x p matrix of regressor
